@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>Weekly Carpool Coordinator</title>
+  
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --border: #cbd5e1;
+      --success-bg: #dcfce7;
+      --success-text: #15803d;
+      --warn-bg: #fef3c7;
+      --warn-text: #b45309;
+      --danger-bg: #fee2e2;
+      --danger-text: #b91c1c;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 12px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .container { max-width: 900px; margin: 0 auto; }
+    
+    header { text-align: center; margin-bottom: 16px; }
+    h1 { font-size: 1.5rem; font-weight: 800; margin: 0 0 4px 0; color: #1e293b; }
+    .subtitle { color: #475569; font-size: 0.85rem; font-weight: 500; }
+    
+    .sync-status {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      margin-top: 6px;
+      background: #e2e8f0;
+      color: #475569;
+    }
+    .sync-live { background: #dcfce7; color: #15803d; }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    h2 { font-size: 1.05rem; font-weight: 700; margin-top: 0; margin-bottom: 12px; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px; color: #1e293b; }
+    
+    .family-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; }
+    .family-row { display: flex; align-items: center; justify-content: space-between; background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px 10px; border-radius: 8px; }
+    .family-row label { font-weight: 700; font-size: 0.85rem; color: #334155; }
+    .family-row input { width: 45px; padding: 6px; border: 1px solid var(--border); border-radius: 6px; text-align: center; font-weight: 700; font-size: 0.9rem; }
+    
+    .table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; white-space: nowrap; }
+    th, td { padding: 8px 6px; text-align: center; border: 1px solid var(--border); }
+    th { background: #f1f5f9; color: #334155; font-weight: 700; }
+
+    .theme-mon { --theme-accent: #2563eb; --theme-bg: #eff6ff; --theme-border: #bfdbfe; }
+    .theme-tue-e { --theme-accent: #d97706; --theme-bg: #fffbeb; --theme-border: #fde68a; }
+    .theme-tue-l { --theme-accent: #7c3aed; --theme-bg: #f5f3ff; --theme-border: #ddd6fe; }
+    .theme-fri { --theme-accent: #16a34a; --theme-bg: #f0fdf4; --theme-border: #bbf7d0; }
+
+    .leg-card {
+      background: var(--theme-bg);
+      border: 1px solid var(--theme-border);
+      border-left: 5px solid var(--theme-accent);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 14px;
+    }
+    .leg-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 6px; }
+    .leg-title { font-weight: 800; font-size: 0.95rem; color: var(--theme-accent); }
+    
+    .badge { padding: 3px 8px; border-radius: 10px; font-weight: 700; font-size: 0.7rem; display: inline-block; }
+    .badge-ok { background: var(--success-bg); color: var(--success-text); }
+    .badge-warn { background: var(--warn-bg); color: var(--warn-text); }
+    .badge-danger { background: var(--danger-bg); color: var(--danger-text); }
+    
+    .info-text { font-size: 0.8rem; color: #475569; margin-bottom: 8px; font-weight: 500; }
+    .carpool-preview { background: #ffffff; border: 1px solid var(--border); border-radius: 6px; padding: 8px; margin-top: 8px; font-size: 0.78rem; }
+    .carpool-preview div { margin-bottom: 3px; }
+
+    .driver-selectors { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+    .driver-box { flex: 1; min-width: 140px; background: white; padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px; }
+    .driver-box label { font-size: 0.75rem; font-weight: 700; display: block; margin-bottom: 3px; color: #475569; }
+    select { width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border); background: #fff; font-size: 0.85rem; font-weight: 600; color: #1e293b; }
+
+    .btn-group { display: flex; gap: 10px; margin-bottom: 40px; }
+    .btn { background: #2563eb; color: white; border: none; padding: 12px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.9rem; flex: 1; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .btn-secondary { background: #64748b; }
+    .btn:active { opacity: 0.8; transform: scale(0.98); }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>Weekly Carpool Coordinator</h1>
+    <div class="subtitle">Complete sign-ups by <strong>Sunday 10:00 PM</strong></div>
+    <div id="sync-status" class="sync-status">Connecting to live cloud data...</div>
+  </header>
+
+  <!-- Section 1: Family Car Capacity -->
+  <div class="card">
+    <h2>1. 🚗 Car Seat Capacity</h2>
+    <div class="family-grid" id="family-grid"></div>
+  </div>
+
+  <!-- Section 2: Attendance Tracking -->
+  <div class="card">
+    <h2>2. ✅ Weekly Kid Attendance</h2>
+    <div class="info-text">Check which practices your kid is attending this week:</div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th style="text-align:left;">Family / Kid</th>
+            <th>MON 6:30p</th>
+            <th>TUE 5:00p</th>
+            <th>TUE 6:30p</th>
+            <th>FRI 6:30p</th>
+          </tr>
+        </thead>
+        <tbody id="attendance-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Section 3: Driver Sign-Ups -->
+  <div class="card">
+    <h2>3. 🚙 Driver Sign-Ups & Car Rosters</h2>
+    <div class="info-text">Select drivers. Parents automatically take their own kid first, then remaining seats fill up:</div>
+    <div id="legs-container"></div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="btn-group">
+    <button class="btn" onclick="copySummary()">📋 Copy Summary for Text</button>
+    <button class="btn btn-secondary" onclick="resetForm()">🔄 Reset for New Week</button>
+  </div>
+</div>
+
+<script>
+  // Replace with your Firebase Database URL
+  const FIREBASE_DB_URL = "https://carpool-app-2d697-default-rtdb.firebaseio.com/";
+
+  let db = null;
+  if (FIREBASE_DB_URL && !FIREBASE_DB_URL.includes("YOUR_FIREBASE_DATABASE_URL_HERE")) {
+    firebase.initializeApp({ databaseURL: FIREBASE_DB_URL });
+    db = firebase.database().ref('carpoolData');
+  }
+
+  let families = [
+    { name: 'Nagib', seats: 3 },
+    { name: 'Mikhail', seats: 4 },
+    { name: 'Letson', seats: 5 },
+    { name: 'Tatalovich', seats: 6 },
+    { name: 'Wilder', seats: 6 },
+    { name: 'Grywalski', seats: 6 }
+  ];
+
+  const slots = [
+    { id: 'mon_630', label: 'MON 6:30p' },
+    { id: 'tue_500', label: 'TUE 5:00p' },
+    { id: 'tue_630', label: 'TUE 6:30p' },
+    { id: 'fri_630', label: 'FRI 6:30p' }
+  ];
+
+  const legs = [
+    { id: 'mon_to', slot: 'mon_630', label: 'MON TO (Practice 6:30 PM)', theme: 'theme-mon' },
+    { id: 'mon_from', slot: 'mon_800', label: 'MON FROM (Pick up 8:00 PM)', attendSlot: 'mon_630', theme: 'theme-mon' },
+    { id: 'tue_e_to', slot: 'tue_500', label: 'TUE TO Early (Practice 5:00 PM)', theme: 'theme-tue-e' },
+    { id: 'tue_e_from', slot: 'tue_630_e', label: 'TUE FROM Early (Pick up 6:30 PM)', attendSlot: 'tue_500', theme: 'theme-tue-e' },
+    { id: 'tue_l_to', slot: 'tue_630', label: 'TUE TO Late (Practice 6:30 PM)', theme: 'theme-tue-l' },
+    { id: 'tue_l_from', slot: 'tue_800', label: 'TUE FROM Late (Pick up 8:00 PM)', attendSlot: 'tue_630', theme: 'theme-tue-l' },
+    { id: 'fri_to', slot: 'fri_630', label: 'FRI TO (Practice 6:30 PM)', theme: 'theme-fri' },
+    { id: 'fri_from', slot: 'fri_800', label: 'FRI FROM (Pick up 8:00 PM)', attendSlot: 'fri_630', theme: 'theme-fri' }
+  ];
+
+  let attendance = {};
+  let drivers = {};
+
+  function initDefaults() {
+    families.forEach(f => {
+      slots.forEach(s => {
+        if (attendance[`${f.name}_${s.id}`] === undefined) {
+          attendance[`${f.name}_${s.id}`] = true;
+        }
+      });
+    });
+  }
+
+  function renderAll() {
+    initDefaults();
+    renderFamilies();
+    renderAttendance();
+    renderLegs();
+  }
+
+  function saveData() {
+    if (db) {
+      db.set({
+        families: families,
+        attendance: attendance,
+        drivers: drivers
+      });
+    }
+  }
+
+  function listenForLiveUpdates() {
+    const statusEl = document.getElementById('sync-status');
+    if (db) {
+      db.on('value', (snapshot) => {
+        const val = snapshot.val();
+        if (val) {
+          if (val.families) families = val.families;
+          if (val.attendance) attendance = val.attendance;
+          if (val.drivers) drivers = val.drivers;
+        }
+        renderAll();
+        statusEl.textContent = "🟢 Live Cloud Sync Active";
+        statusEl.className = "sync-status sync-live";
+      });
+    } else {
+      statusEl.textContent = "⚠️ Offline Mode (Set up Firebase URL for live sync)";
+      renderAll();
+    }
+  }
+
+  function renderFamilies() {
+    document.getElementById('family-grid').innerHTML = families.map((f, i) => `
+      <div class="family-row">
+        <label>${f.name}</label>
+        <div><input type="number" min="1" max="8" value="${f.seats}" onchange="updateSeats(${i}, this.value)" /> seats</div>
+      </div>
+    `).join('');
+  }
+
+  function updateSeats(index, val) {
+    families[index].seats = parseInt(val) || 0;
+    renderLegs();
+    saveData();
+  }
+
+  function renderAttendance() {
+    document.getElementById('attendance-tbody').innerHTML = families.map(f => `
+      <tr>
+        <td style="font-weight:700; text-align:left;">${f.name}</td>
+        ${slots.map(s => `
+          <td>
+            <input type="checkbox" style="width:18px; height:18px;" ${attendance[`${f.name}_${s.id}`] ? 'checked' : ''} onchange="toggleAttendance('${f.name}', '${s.id}')" />
+          </td>
+        `).join('')}
+      </tr>
+    `).join('');
+  }
+
+  function toggleAttendance(familyName, slotId) {
+    attendance[`${familyName}_${slotId}`] = !attendance[`${familyName}_${slotId}`];
+    renderLegs();
+    saveData();
+  }
+
+  function getAttendingKids(leg) {
+    const slotKey = leg.attendSlot || leg.slot;
+    return families.filter(f => attendance[`${f.name}_${slotKey}`]);
+  }
+
+  function calculateCarDistribution(leg) {
+    const attendingKids = getAttendingKids(leg);
+    const legDrivers = drivers[leg.id] || { driver1: '', driver2: '' };
+    const d1 = families.find(f => f.name === legDrivers.driver1);
+    const d2 = families.find(f => f.name === legDrivers.driver2);
+
+    let unassigned = [...attendingKids.map(k => k.name)];
+    let car1Passengers = [];
+    let car2Passengers = [];
+
+    if (d1) {
+      if (unassigned.includes(d1.name)) {
+        car1Passengers.push(d1.name);
+        unassigned = unassigned.filter(n => n !== d1.name);
+      }
+      while (car1Passengers.length < d1.seats && unassigned.length > 0) {
+        car1Passengers.push(unassigned.shift());
+      }
+    }
+
+    if (d2) {
+      if (unassigned.includes(d2.name)) {
+        car2Passengers.push(d2.name);
+        unassigned = unassigned.filter(n => n !== d2.name);
+      }
+      while (car2Passengers.length < d2.seats && unassigned.length > 0) {
+        car2Passengers.push(unassigned.shift());
+      }
+    }
+
+    const totalOffered = (d1 ? d1.seats : 0) + (d2 ? d2.seats : 0);
+    return { attendingKids, d1, d2, car1Passengers, car2Passengers, unassigned, totalOffered };
+  }
+
+  function renderLegs() {
+    const container = document.getElementById('legs-container');
+    container.innerHTML = legs.map(leg => {
+      const calc = calculateCarDistribution(leg);
+      const kidsNeeded = calc.attendingKids.length;
+      
+      let badgeClass = 'badge-danger';
+      let badgeText = `NEED DRIVERS (${kidsNeeded} kids going)`;
+
+      if (kidsNeeded === 0) {
+        badgeClass = 'badge-ok';
+        badgeText = 'NO KIDS ATTENDING';
+      } else if (calc.unassigned.length === 0 && (calc.d1 || calc.d2)) {
+        badgeClass = 'badge-ok';
+        badgeText = `FULLY COVERED`;
+      } else if (calc.totalOffered >= kidsNeeded && (calc.d1 || calc.d2)) {
+        badgeClass = 'badge-ok';
+        badgeText = `COVERED`;
+      } else if (calc.totalOffered > 0) {
+        badgeClass = 'badge-warn';
+        badgeText = `NEED MORE SEATS`;
+      }
+
+      const legDrivers = drivers[leg.id] || { driver1: '', driver2: '' };
+
+      return `
+        <div class="leg-card ${leg.theme}">
+          <div class="leg-header">
+            <span class="leg-title">${leg.label}</span>
+            <span class="badge ${badgeClass}">${badgeText}</span>
+          </div>
+          <div style="font-size:0.78rem; color:#334155; margin-bottom:6px;">
+            <strong>Kids going (${kidsNeeded}):</strong> ${calc.attendingKids.map(k => k.name).join(', ') || 'None'}
+          </div>
+
+          <div class="driver-selectors">
+            <div class="driver-box">
+              <label>Driver 1</label>
+              <select onchange="setDriver('${leg.id}', 'driver1', this.value)">
+                <option value="">-- Select Driver 1 --</option>
+                ${families.map(f => `<option value="${f.name}" ${legDrivers.driver1 === f.name ? 'selected' : ''}>${f.name} (${f.seats} seats)</option>`).join('')}
+              </select>
+            </div>
+            <div class="driver-box">
+              <label>Driver 2 (Optional)</label>
+              <select onchange="setDriver('${leg.id}', 'driver2', this.value)">
+                <option value="">-- Select Driver 2 --</option>
+                ${families.map(f => `<option value="${f.name}" ${legDrivers.driver2 === f.name ? 'selected' : ''}>${f.name} (${f.seats} seats)</option>`).join('')}
+              </select>
+            </div>
+          </div>
+
+          ${(calc.d1 || calc.d2) ? `
+            <div class="carpool-preview">
+              <div>🚗 <strong>Car 1 (${calc.d1 ? calc.d1.name : 'None'}):</strong> ${calc.car1Passengers.join(', ') || 'None'}</div>
+              ${calc.d2 ? `<div>🚗 <strong>Car 2 (${calc.d2.name}):</strong> ${calc.car2Passengers.join(', ') || 'None'}</div>` : ''}
+              ${calc.unassigned.length > 0 ? `<div style="color:var(--danger-text); font-weight:700;">⚠️ Unassigned kids: ${calc.unassigned.join(', ')}</div>` : ''}
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }).join('');
+  }
+
+  function setDriver(legId, driverKey, name) {
+    if (!drivers[legId]) drivers[legId] = { driver1: '', driver2: '' };
+    drivers[legId][driverKey] = name;
+    renderLegs();
+    saveData();
+  }
+
+  function resetForm() {
+    if (confirm("Clear all driver signups for a new week?")) {
+      drivers = {};
+      renderLegs();
+      saveData();
+    }
+  }
+
+  function copySummary() {
+    let text = `🚗 WEEKLY CARPOOL SCHEDULE\n\n`;
+
+    legs.forEach(leg => {
+      const calc = calculateCarDistribution(leg);
+      text += `📍 ${leg.label}\n`;
+
+      if (calc.attendingKids.length === 0) {
+        text += `   No kids attending.\n\n`;
+        return;
+      }
+
+      if (!calc.d1 && !calc.d2) {
+        text += `   ⚠️ NEED DRIVER(S) - ${calc.attendingKids.length} kids going\n\n`;
+        return;
+      }
+
+      if (calc.d1) {
+        text += `   • Driver 1: ${calc.d1.name} (Riding: ${calc.car1Passengers.join(', ')})\n`;
+      }
+      if (calc.d2) {
+        text += `   • Driver 2: ${calc.d2.name} (Riding: ${calc.car2Passengers.join(', ')})\n`;
+      }
+      if (calc.unassigned.length > 0) {
+        text += `   ⚠️ NEED SEATS FOR: ${calc.unassigned.join(', ')}\n`;
+      }
+      text += `\n`;
+    });
+
+    navigator.clipboard.writeText(text);
+    alert("Weekly summary copied to clipboard!");
+  }
+
+  listenForLiveUpdates();
+</script>
+</body>
+</html>
