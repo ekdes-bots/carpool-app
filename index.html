@@ -111,6 +111,9 @@
     <h1>Weekly Carpool Coordinator</h1>
     <div class="subtitle">Complete sign-ups by <strong>Sunday 10:00 PM</strong></div>
     <div id="sync-status" class="sync-status">Connecting to live cloud data...</div>
+    <div style="font-size: 0.75rem; color: #15803d; font-weight: 700; margin-top: 6px;">
+      ⚡ Changes auto-save instantly for all families
+    </div>
   </header>
 
   <!-- Section 1: Family Car Capacity -->
@@ -217,6 +220,15 @@
         attendance: attendance,
         drivers: drivers
       });
+      
+      // Quick visual feedback when changes save
+      const statusEl = document.getElementById('sync-status');
+      if (statusEl) {
+        statusEl.textContent = "✓ Saved to Cloud";
+        setTimeout(() => {
+          statusEl.textContent = "🟢 Live Cloud Sync Active";
+        }, 1200);
+      }
     }
   }
 
