@@ -301,21 +301,25 @@
     let car1Passengers = [];
     let car2Passengers = [];
 
+    // Step 1: Always put drivers' kids into their own parent's car FIRST
+    if (d1 && unassigned.includes(d1.name)) {
+      car1Passengers.push(d1.name);
+      unassigned = unassigned.filter(n => n !== d1.name);
+    }
+    if (d2 && unassigned.includes(d2.name)) {
+      car2Passengers.push(d2.name);
+      unassigned = unassigned.filter(n => n !== d2.name);
+    }
+
+    // Step 2: Fill remaining available seats in Car 1 with other kids
     if (d1) {
-      if (unassigned.includes(d1.name)) {
-        car1Passengers.push(d1.name);
-        unassigned = unassigned.filter(n => n !== d1.name);
-      }
       while (car1Passengers.length < d1.seats && unassigned.length > 0) {
         car1Passengers.push(unassigned.shift());
       }
     }
 
+    // Step 3: Fill remaining available seats in Car 2 with other kids
     if (d2) {
-      if (unassigned.includes(d2.name)) {
-        car2Passengers.push(d2.name);
-        unassigned = unassigned.filter(n => n !== d2.name);
-      }
       while (car2Passengers.length < d2.seats && unassigned.length > 0) {
         car2Passengers.push(unassigned.shift());
       }
@@ -324,7 +328,7 @@
     const totalOffered = (d1 ? d1.seats : 0) + (d2 ? d2.seats : 0);
     return { attendingKids, d1, d2, car1Passengers, car2Passengers, unassigned, totalOffered };
   }
-
+  
   function renderLegs() {
     const container = document.getElementById('legs-container');
     container.innerHTML = legs.map(leg => {
