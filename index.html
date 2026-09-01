@@ -71,6 +71,7 @@
     .theme-mon { --theme-accent: #2563eb; --theme-bg: #eff6ff; --theme-border: #bfdbfe; }
     .theme-tue-e { --theme-accent: #d97706; --theme-bg: #fffbeb; --theme-border: #fde68a; }
     .theme-tue-l { --theme-accent: #7c3aed; --theme-bg: #f5f3ff; --theme-border: #ddd6fe; }
+    .theme-thu { --theme-accent: #0284c7; --theme-bg: #f0f9ff; --theme-border: #bae6fd; }
     .theme-fri { --theme-accent: #16a34a; --theme-bg: #f0fdf4; --theme-border: #bbf7d0; }
 
     .leg-card {
@@ -134,6 +135,7 @@
             <th>MON 6:30p</th>
             <th>TUE 5:00p</th>
             <th>TUE 6:30p</th>
+            <th>THU 6:30p</th>
             <th>FRI 6:30p</th>
           </tr>
         </thead>
@@ -179,6 +181,7 @@
     { id: 'mon_630', label: 'MON 6:30p' },
     { id: 'tue_500', label: 'TUE 5:00p' },
     { id: 'tue_630', label: 'TUE 6:30p' },
+    { id: 'thu_630', label: 'THU 6:30p' },
     { id: 'fri_630', label: 'FRI 6:30p' }
   ];
 
@@ -189,6 +192,8 @@
     { id: 'tue_e_from', slot: 'tue_630_e', label: 'TUE FROM Early (Pick up 6:30 PM)', attendSlot: 'tue_500', theme: 'theme-tue-e' },
     { id: 'tue_l_to', slot: 'tue_630', label: 'TUE TO Late (Practice 6:30 PM)', theme: 'theme-tue-l' },
     { id: 'tue_l_from', slot: 'tue_800', label: 'TUE FROM Late (Pick up 8:00 PM)', attendSlot: 'tue_630', theme: 'theme-tue-l' },
+    { id: 'thu_to', slot: 'thu_630', label: 'THU TO (Practice 6:30 PM)', theme: 'theme-thu' },
+  { id: 'thu_from', slot: 'thu_800', label: 'THU FROM (Pick up 8:00 PM)', attendSlot: 'thu_630', theme: 'theme-thu' },
     { id: 'fri_to', slot: 'fri_630', label: 'FRI TO (Practice 6:30 PM)', theme: 'theme-fri' },
     { id: 'fri_from', slot: 'fri_800', label: 'FRI FROM (Pick up 8:00 PM)', attendSlot: 'fri_630', theme: 'theme-fri' }
   ];
