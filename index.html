@@ -132,11 +132,11 @@
         <thead>
           <tr>
             <th style="text-align:left;">Family / Kid</th>
-            <th>MON 6:15p</th>
+            <th>MON 6:00p</th>
             <th>TUE 5:00p</th>
-            <th>TUE 6:15p</th>
-            <th>THU 6:15p</th>
-            <th>FRI 6:15p</th>
+            <th>TUE 6:00p</th>
+            <th>THU 6:00p</th>
+            <th>FRI 6:00p</th>
           </tr>
         </thead>
         <tbody id="attendance-tbody"></tbody>
@@ -178,24 +178,24 @@
   ];
 
   const slots = [
-    { id: 'mon_615', label: 'MON 6:15p' },
+    { id: 'mon_600', label: 'MON 6:00p' },
     { id: 'tue_500', label: 'TUE 5:00p' },
-    { id: 'tue_615', label: 'TUE 6:15p' },
-    { id: 'thu_615', label: 'THU 6:15p' },
-    { id: 'fri_615', label: 'FRI 6:15p' }
+    { id: 'tue_600', label: 'TUE 6:00p' },
+    { id: 'thu_600', label: 'THU 6:00p' },
+    { id: 'fri_600', label: 'FRI 6:00p' }
   ];
 
   const legs = [
-    { id: 'mon_to', slot: 'mon_615', label: 'MON TO (Practice 6:15 PM)', theme: 'theme-mon' },
-    { id: 'mon_from', slot: 'mon_730', label: 'MON FROM (Pick up 7:30 PM)', attendSlot: 'mon_615', theme: 'theme-mon' },
+    { id: 'mon_to', slot: 'mon_600', label: 'MON TO (Practice 6:00 PM)', theme: 'theme-mon' },
+    { id: 'mon_from', slot: 'mon_700', label: 'MON FROM (Pick up 7:00 PM)', attendSlot: 'mon_600', theme: 'theme-mon' },
     { id: 'tue_e_to', slot: 'tue_500', label: 'TUE TO Early (Practice 5:00 PM)', theme: 'theme-tue-e' },
-    { id: 'tue_e_from', slot: 'tue_630_e', label: 'TUE FROM Early (Pick up 6:30 PM)', attendSlot: 'tue_500', theme: 'theme-tue-e' },
-    { id: 'tue_l_to', slot: 'tue_615', label: 'TUE TO Late (Practice 6:15 PM)', theme: 'theme-tue-l' },
-    { id: 'tue_l_from', slot: 'tue_730', label: 'TUE FROM Late (Pick up 7:30 PM)', attendSlot: 'tue_615', theme: 'theme-tue-l' },
-    { id: 'thu_to', slot: 'thu_615', label: 'THU TO (Practice 6:15 PM)', theme: 'theme-thu' },
-  { id: 'thu_from', slot: 'thu_730', label: 'THU FROM (Pick up 7:30 PM)', attendSlot: 'thu_615', theme: 'theme-thu' },
-    { id: 'fri_to', slot: 'fri_615', label: 'FRI TO (Practice 6:15 PM)', theme: 'theme-fri' },
-    { id: 'fri_from', slot: 'fri_7:30', label: 'FRI FROM (Pick up 7:30 PM)', attendSlot: 'fri_615', theme: 'theme-fri' }
+    { id: 'tue_e_from', slot: 'tue_600_e', label: 'TUE FROM Early (Pick up 6:00 PM)', attendSlot: 'tue_500', theme: 'theme-tue-e' },
+    { id: 'tue_l_to', slot: 'tue_600', label: 'TUE TO Late (Practice 6:00 PM)', theme: 'theme-tue-l' },
+    { id: 'tue_l_from', slot: 'tue_700', label: 'TUE FROM Late (Pick up 7:00 PM)', attendSlot: 'tue_600', theme: 'theme-tue-l' },
+    { id: 'thu_to', slot: 'thu_600', label: 'THU TO (Practice 6:00 PM)', theme: 'theme-thu' },
+  { id: 'thu_from', slot: 'thu_700', label: 'THU FROM (Pick up 7:00 PM)', attendSlot: 'thu_600', theme: 'theme-thu' },
+    { id: 'fri_to', slot: 'fri_600', label: 'FRI TO (Practice 6:00 PM)', theme: 'theme-fri' },
+    { id: 'fri_from', slot: 'fri_700', label: 'FRI FROM (Pick up 7:00 PM)', attendSlot: 'fri_600', theme: 'theme-fri' }
   ];
 
   let attendance = {};
